@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Best Friend Puzzle Game</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #ff6a88, #ff99ac);
+      color: white;
+      text-align: center;
+      overflow-x: hidden;
+    }
+
+    h1 { margin: 20px 0 5px; }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin: 10px 0;
+      flex-wrap: wrap;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.2);
+      padding: 10px 15px;
+      border-radius: 12px;
+      min-width: 100px;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      background: #ff3d6d;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #puzzle {
+      width: 90vw;
+      max-width: 400px;
+      aspect-ratio: 4/5;
+      margin: 20px auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(5, 1fr);
+      gap: 2px;
+    }
+
+    .tile {
+      border-radius: 6px;
+      cursor: grab;
+      background-repeat: no-repeat;
+      background-size: 100% 100%;
+    }
+
+    .modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: white;
+      color: black;
+      padding: 30px;
+      border-radius: 15px;
+      text-align: center;
+      position: relative;
+    }
+
+    #noBtn { position: absolute; }
+
+    .result-img {
+      width: 200px;
+      border-radius: 12px;
+      margin-bottom: 15px;
+    }
+
+    canvas.confetti {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🧩 Best Friend Puzzle</h1>
+
+<div class="controls">
+  <div class="card">⏱ Time: <span id="time">0</span>s</div>
+  <div class="card">🎯 Moves: <span id="moves">0</span></div>
+  <button onclick="shuffle()">Shuffle</button>
+</div>
+
+<div id="puzzle"></div>
+
+<!-- Proposal Modal -->
+<div id="proposal" class="modal">
+  <div class="modal-content" id="modalBox">
+    <h2>🤝 Are you my best friend forever?</h2>
+    <button onclick="yesClicked()">Yes 😄</button>
+    <button id="noBtn">No 😂</button>
+  </div>
+</div>
+
+<!-- Result Modal -->
+<div id="result" class="modal">
+  <div class="modal-content">
+    <img src="puzzle.png" class="result-img" />
+    <p>
+      Helloooo zaheeeeeeeee😘😘, you are one of the most important people in my life. All the fun, laughs, and crazy memories we share mean everything to me. Thanks for always being there no matter what 🤗✨And remember my best jokes and don't worry, I will continue the legacy with my doll aishuuuuuuu😂😂once again, thank you so much Kana, for not leaving me and tolerating my bak bak throughout our journey 😘🥰lubbbbbbbbbbbb uuuuuuuuuuuu GE JAGEEEEERAAAAAAAA😘💓
+    </p>
+  </div>
+</div>
+
+<script>
+  const puzzle = document.getElementById("puzzle");
+  const cols = 4, rows = 5;
+  let tiles = [];
+  let draggedIndex = null;
+  let moves = 0;
+  let time = 0;
+  let timer;
+
+  const img = new Image();
+  img.src = "puzzle.png";
+
+  function startTimer() {
+    clearInterval(timer);
+    time = 0;
+    timer = setInterval(() => {
+      time++;
+      document.getElementById("time").innerText = time;
+    }, 1000);
+  }
+
+  function createTiles() {
+    tiles = [];
+    puzzle.innerHTML = "";
+
+    const pieceWidth = img.width / cols;
+    const pieceHeight = img.height / rows;
+
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        canvas.width = pieceWidth;
+        canvas.height = pieceHeight;
+
+        ctx.drawImage(img, x * pieceWidth, y * pieceHeight, pieceWidth, pieceHeight, 0, 0, pieceWidth, pieceHeight);
+
+        const tile = document.createElement("div");
+        tile.classList.add("tile");
+        tile.style.backgroundImage = `url(${canvas.toDataURL()})`;
+        tile.setAttribute("draggable", true);
+
+        const index = y * cols + x;
+        tile.dataset.index = index;
+
+        tile.addEventListener("dragstart", () => {
+          draggedIndex = tiles.indexOf(tile);
+        });
+
+        tile.addEventListener("dragover", e => e.preventDefault());
+
+        tile.addEventListener("drop", () => {
+          const dropIndex = tiles.indexOf(tile);
+          swap(draggedIndex, dropIndex);
+        });
+
+        tiles.push(tile);
+      }
+    }
+
+    shuffle();
+    render();
+    startTimer();
+  }
+
+  function shuffle() {
+    for (let i = tiles.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
+    }
+    moves = 0;
+    document.getElementById("moves").innerText = moves;
+    render();
+    startTimer();
+  }
+
+  function swap(i, j) {
+    if (i === null || j === null) return;
+    [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
+    moves++;
+    document.getElementById("moves").innerText = moves;
+    render();
+    checkWin();
+  }
+
+  function render() {
+    puzzle.innerHTML = "";
+    tiles.forEach(t => puzzle.appendChild(t));
+  }
+
+  function checkWin() {
+    let correct = tiles.every((tile, i) => tile.dataset.index == i);
+    if (correct) {
+      clearInterval(timer);
+      setTimeout(() => {
+        document.getElementById("proposal").style.display = "flex";
+      }, 300);
+    }
+  }
+
+  // No button jumps ONLY when hovered
+  const noBtn = document.getElementById("noBtn");
+  noBtn.addEventListener("mouseenter", () => {
+    const box = document.getElementById("modalBox");
+    const x = Math.random() * (box.offsetWidth - 80);
+    const y = Math.random() * (box.offsetHeight - 40);
+    noBtn.style.left = x + 'px';
+    noBtn.style.top = y + 'px';
+  });
+
+  function yesClicked() {
+    document.getElementById("proposal").style.display = "none";
+    document.getElementById("result").style.display = "flex";
+    startConfetti();
+  }
+
+  // Simple confetti
+  function startConfetti() {
+    const canvas = document.createElement('canvas');
+    canvas.classList.add('confetti');
+    document.body.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let pieces = [];
+    for (let i = 0; i < 150; i++) {
+      pieces.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 6 + 2,
+        d: Math.random() * 50
+      });
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#fff";
+      pieces.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      update();
+    }
+
+    function update() {
+      pieces.forEach(p => {
+        p.y += Math.cos(p.d) + 1;
+        p.x += Math.sin(p.d);
+        if (p.y > canvas.height) {
+          p.y = 0;
+          p.x = Math.random() * canvas.width;
+        }
+      });
+    }
+
+    setInterval(draw, 20);
+  }
+
+  img.onload = () => createTiles();
+</script>
+
+</body>
+</html>
