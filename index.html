@@ -79,7 +79,7 @@
       position: relative;
     }
 
-    #noBtn { position: absolute; }
+    #noBtn { position: static; }
 
     .result-img {
       width: 200px;
@@ -228,36 +228,39 @@
     }
   }
 
-  // No button with multi-message fun 😏
-  let noClickCount = 0;
-  const noMessages = [
-    "😏 Ohooo trying to say no ah? Think again 😂",
-    "😂 No ah? Re-check your decision madam 😌",
-    "😜 Arey you can’t escape this friendship!",
-    "😎 Too late... best friends forever confirmed!",
-    "🤣 Just press YES already daaa"
-  ];
-
+  // No button simple single message (no movement)
   function noClicked() {
     const msg = document.getElementById("noMsg");
+    msg.innerText = "How dare youuuuuuu🤨🤨bayiii muchkondu go back and click yess, you are stuck with me forever😂😂";
 
-    // cycle messages
-    msg.innerText = noMessages[noClickCount % noMessages.length];
-    noClickCount++;
+    // create floating angry emojis
+    for (let i = 0; i < 8; i++) {
+      const emoji = document.createElement("div");
+      emoji.innerText = "😡🤬😳😬😑🤨😤";
+      emoji.style.position = "fixed";
+      emoji.style.left = Math.random() * window.innerWidth + "px";
+      emoji.style.top = window.innerHeight + "px";
+      emoji.style.fontSize = "24px";
+      emoji.style.pointerEvents = "none";
+      document.body.appendChild(emoji);
 
-    // small jump effect
-    const btn = document.getElementById("noBtn");
-    const box = document.getElementById("modalBox");
-    const x = Math.random() * (box.offsetWidth - 80);
-    const y = Math.random() * (box.offsetHeight - 40);
-    btn.style.left = x + 'px';
-    btn.style.top = y + 'px';
+      let pos = window.innerHeight;
+      const interval = setInterval(() => {
+        pos -= 5;
+        emoji.style.top = pos + "px";
+        if (pos < -50) {
+          clearInterval(interval);
+          emoji.remove();
+        }
+      }, 30);
+    }
   }
 
   function yesClicked() {
     document.getElementById("proposal").style.display = "none";
     document.getElementById("result").style.display = "flex";
     startConfetti();
+    startHearts();
   }
 
   // Simple confetti
@@ -303,6 +306,30 @@
     }
 
     setInterval(draw, 20);
+  }
+
+  // Floating heart emojis on YES
+  function startHearts() {
+    for (let i = 0; i < 20; i++) {
+      const heart = document.createElement("div");
+      heart.innerText = "❤️💖💘💝💗";
+      heart.style.position = "fixed";
+      heart.style.left = Math.random() * window.innerWidth + "px";
+      heart.style.top = window.innerHeight + "px";
+      heart.style.fontSize = "24px";
+      heart.style.pointerEvents = "none";
+      document.body.appendChild(heart);
+
+      let pos = window.innerHeight;
+      const interval = setInterval(() => {
+        pos -= 4;
+        heart.style.top = pos + "px";
+        if (pos < -50) {
+          clearInterval(interval);
+          heart.remove();
+        }
+      }, 30);
+    }
   }
 
   img.onload = () => createTiles();
