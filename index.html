@@ -112,7 +112,8 @@
   <div class="modal-content" id="modalBox">
     <h2>🤝 Are you my best friend forever?</h2>
     <button onclick="yesClicked()">Yes 😄</button>
-    <button id="noBtn">No 😂</button>
+    <button id="noBtn" onclick="noClicked()">No 😂</button>
+    <p id="noMsg" style="margin-top:10px;color:#ff3d6d;font-weight:bold;"></p>
   </div>
 </div>
 
@@ -227,15 +228,31 @@
     }
   }
 
-  // No button jumps ONLY when hovered
-  const noBtn = document.getElementById("noBtn");
-  noBtn.addEventListener("mouseenter", () => {
+  // No button with multi-message fun 😏
+  let noClickCount = 0;
+  const noMessages = [
+    "😏 Ohooo trying to say no ah? Think again 😂",
+    "😂 No ah? Re-check your decision madam 😌",
+    "😜 Arey you can’t escape this friendship!",
+    "😎 Too late... best friends forever confirmed!",
+    "🤣 Just press YES already daaa"
+  ];
+
+  function noClicked() {
+    const msg = document.getElementById("noMsg");
+
+    // cycle messages
+    msg.innerText = noMessages[noClickCount % noMessages.length];
+    noClickCount++;
+
+    // small jump effect
+    const btn = document.getElementById("noBtn");
     const box = document.getElementById("modalBox");
     const x = Math.random() * (box.offsetWidth - 80);
     const y = Math.random() * (box.offsetHeight - 40);
-    noBtn.style.left = x + 'px';
-    noBtn.style.top = y + 'px';
-  });
+    btn.style.left = x + 'px';
+    btn.style.top = y + 'px';
+  }
 
   function yesClicked() {
     document.getElementById("proposal").style.display = "none";
